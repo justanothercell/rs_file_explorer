@@ -19,11 +19,19 @@ fn enable_virtual_terminal_processing() {
     }
 }
 
-fn quit() -> ! {
+pub(crate) fn quit() -> ! {
     print!("\x1b[?25h");  // show cursor
     print!("\x1b[?47l");  // restore screen
     let _ = stdout().flush();
     exit(0)
+}
+
+pub(crate) fn truncate_str(str: &str, len: usize) -> String{
+    if str.len() < len - 2 {
+        str.to_string()
+    } else {
+        str.split_at(len - 3).0.to_string() + "..."
+    }
 }
 
 pub(crate) struct Cli {

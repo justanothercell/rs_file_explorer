@@ -5,6 +5,8 @@ mod files;
 mod os_generic;
 
 fn main() {
-    collect_items(".");
+    for item in collect_items("testing") {
+        println!("{}", item.render())
+    }
     //cli::Cli::start();
 }

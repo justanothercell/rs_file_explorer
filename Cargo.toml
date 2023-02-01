@@ -7,7 +7,8 @@ edition = "2021"
 getch = "0.3.1"
 term_size = "0.3.2"
 ctrlc = "3.2.4"
+open = "3.2.0"
+chrono = "0.4.23"
 
 [target.'cfg(windows)'.dependencies]
 winapi-util = "0.1"
-open = "3.2.0"
