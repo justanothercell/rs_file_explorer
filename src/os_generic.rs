@@ -56,7 +56,7 @@ pub(crate) fn fmt_path_save(path: &PathBuf) -> String {
     path.to_str().unwrap().split_at(4).1.to_string()
 }
 #[cfg(not(windows))]
-pub(crate) fn fmt_canonical_path(path: &PathBuf) -> String {
+pub(crate) fn fmt_path_save(path: &PathBuf) -> String {
     path.to_str().unwrap().to_string()
 }
 
