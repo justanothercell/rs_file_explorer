@@ -9,7 +9,6 @@ use std::os::windows::fs::FileTypeExt;
 use std::os::unix::prelude::FileTypeExt;
 
 use std::path::PathBuf;
-use std::time::SystemTime;
 use chrono::{Local, Offset, TimeZone};
 
 #[cfg(windows)]
