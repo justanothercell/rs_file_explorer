@@ -1,7 +1,7 @@
 #[cfg(windows)]
 pub(crate) use std::os::windows::fs::MetadataExt;
 #[cfg(not(windows))]
-pub(crate) use std::os::not(windows)::fs::MetadataExt;
+pub(crate) use std::os::unix::MetadataExt;
 use std::path::PathBuf;
 
 #[cfg(windows)]
