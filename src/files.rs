@@ -1,6 +1,5 @@
-use std::ops::{Add, AddAssign};
-use std::os::windows::fs::FileTypeExt;
-use chrono::{TimeZone, Utc, Duration, Local, Offset, DateTime, Datelike};
+use std::ops::{Add};
+use chrono::{TimeZone, Utc, Duration, Local, Offset, DateTime};
 use crate::cli::truncate_str;
 use crate::os_generic::MetadataExt;
 

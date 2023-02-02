@@ -8,13 +8,10 @@ use std::sync::{Arc, Mutex};
 use std::{env, thread};
 use getch::Getch;
 use crate::files::{collect_items, Item, ItemType};
-use crate::os_generic::{config_dir, enable_virtual_terminal_processing, fmt_canonical_path, MetadataExt};
+use crate::os_generic::{config_dir, enable_virtual_terminal_processing, fmt_canonical_path, fmt_path_save, MetadataExt};
 
 pub(crate) fn quit() -> ! {
-    #[cfg(windows)]
-    File::create(&format!("{}/cc_cwd", config_dir())).unwrap().write_all(&env::current_dir().unwrap().to_str().unwrap().as_bytes()[4..]).unwrap();
-    #[cfg(not(windows))]
-    File::create(&format!("{}/cc_cwd", config_dir())).unwrap().write_all(env::current_dir().unwrap().to_str().unwrap().as_bytes()).unwrap();
+    File::create(&format!("{}/cc_cwd", config_dir())).unwrap().write_all(&fmt_path_save(&env::current_dir().unwrap()).as_bytes()).unwrap();
     print!("\x1b[?47l");  // restore screen
     print!("\x1b[?25h");  // show cursor
     let _ = stdout().flush();

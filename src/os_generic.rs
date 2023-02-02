@@ -2,13 +2,13 @@
 pub(crate) use std::os::windows::fs::MetadataExt;
 #[cfg(not(windows))]
 pub(crate) use std::os::unix::prelude::MetadataExt;
+
 use std::path::PathBuf;
 
 #[cfg(windows)]
 pub(crate) fn config_dir() -> String {
     format!("{}/cc", std::env::var("APPDATA").expect("no %APPDATA%found"))
 }
-
 #[cfg(not(windows))]
 pub(crate) fn config_dir() -> String {
     String::from("/etc/cc")
@@ -18,7 +18,15 @@ pub(crate) fn config_dir() -> String {
 pub(crate) fn fmt_canonical_path(path: &PathBuf) -> String {
     path.to_str().unwrap().split_at(4).1.replace("\\", "/")
 }
+#[cfg(not(windows))]
+pub(crate) fn fmt_canonical_path(path: &PathBuf) -> String {
+    path.to_str().unwrap().to_string()
+}
 
+#[cfg(windows)]
+pub(crate) fn fmt_path_save(path: &PathBuf) -> String {
+    path.to_str().unwrap().split_at(4).1.to_string()
+}
 #[cfg(not(windows))]
 pub(crate) fn fmt_canonical_path(path: &PathBuf) -> String {
     path.to_str().unwrap().to_string()
