@@ -1,12 +1,12 @@
 #[cfg(windows)]
 pub(crate) use std::os::windows::fs::MetadataExt;
 #[cfg(not(windows))]
-pub(crate) use std::os::unix::prelude::MetadataExt;
+pub(crate) use std::os::unix::MetadataExt;
 
 #[cfg(windows)]
 pub(crate) use std::os::windows::fs::FileTypeExt;
 #[cfg(not(windows))]
-pub(crate) use std::os::unix::prelude::FileTypeExt;
+pub(crate) use std::os::unix::FileTypeExt;
 
 use std::path::PathBuf;
 
