@@ -1,12 +1,17 @@
-use crate::files::collect_items;
+#![feature(let_chains)]
+
+use crate::os_generic::config_dir;
 
 mod cli;
 mod files;
 mod os_generic;
 
 fn main() {
-    for item in collect_items("testing") {
-        println!("{}", item.render())
+    match std::fs::create_dir(config_dir()) {
+        Err(e) if e.kind() != std::io::ErrorKind::AlreadyExists => {
+            panic!("unable to create config dir")
+        }
+        _ => ()
     }
-    //cli::Cli::start();
+    cli::Cli::start(".");
 }
