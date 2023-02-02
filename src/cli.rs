@@ -8,26 +8,12 @@ use std::sync::{Arc, Mutex};
 use std::{env, thread};
 use getch::Getch;
 use crate::files::{collect_items, Item, ItemType};
-use crate::os_generic::{config_dir, fmt_canonical_path, MetadataExt};
-
-fn enable_virtual_terminal_processing() {
-    #[cfg(windows)]
-    {
-        use winapi_util::console::Console;
-
-        if let Ok(mut term) = Console::stdout() {
-            let _ = term.set_virtual_terminal_processing(true);
-        }
-        if let Ok(mut term) = Console::stderr() {
-            let _ = term.set_virtual_terminal_processing(true);
-        }
-    }
-}
+use crate::os_generic::{config_dir, enable_virtual_terminal_processing, fmt_canonical_path, MetadataExt};
 
 pub(crate) fn quit() -> ! {
     #[cfg(windows)]
     File::create(&format!("{}/cc_cwd", config_dir())).unwrap().write_all(&env::current_dir().unwrap().to_str().unwrap().as_bytes()[4..]).unwrap();
-    #[cfg(unix)]
+    #[cfg(not(windows))]
     File::create(&format!("{}/cc_cwd", config_dir())).unwrap().write_all(env::current_dir().unwrap().to_str().unwrap().as_bytes()).unwrap();
     print!("\x1b[?47l");  // restore screen
     print!("\x1b[?25h");  // show cursor
