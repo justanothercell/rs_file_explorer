@@ -1,8 +1,7 @@
 use std::ops::{Add};
 use chrono::{TimeZone, Utc, Duration, Local, Offset, DateTime};
 use crate::cli::truncate_str;
-use crate::os_generic::MetadataExt;
-use crate::os_generic::FileTypeExt;
+use crate::os_generic::{get_meta_info};
 
 #[derive(Debug, Clone)]
 pub(crate) struct Item {
@@ -10,19 +9,17 @@ pub(crate) struct Item {
     pub(crate) name: String,
     pub(crate) readonly: bool,
     pub(crate) created: u64,
-    pub(crate) last_used: u64,
+    pub(crate) last_accessed: u64,
     pub(crate) last_written: u64
 }
 
 impl Item {
     pub(crate) fn render(&self) -> String {
         let mut time_zero = Utc.with_ymd_and_hms(1601, 1, 1, 0, 0, 0).unwrap();
-        // account for timezone
-        time_zero += Duration::seconds(Local.timestamp_opt(0, 0).unwrap().offset().fix().local_minus_utc() as i64);
 
-        let created = time_zero.add(Duration::seconds((self.created / 10000000) as i64));
-        let accessed = time_zero.add(Duration::seconds((self.last_used / 10000000) as i64));
-        let written = time_zero.add(Duration::seconds((self.last_written / 10000000) as i64));
+        let created = time_zero.add(Duration::seconds(self.created as i64));
+        let accessed = time_zero.add(Duration::seconds(self.last_accessed as i64));
+        let written = time_zero.add(Duration::seconds(self.last_written as i64));
         format!("| {:32} | {} {} | {} | {:11} | {:11} |",
                 truncate_str(&(self.name.clone() + match self.ty {
                 ItemType::Dir => "/",
@@ -30,8 +27,7 @@ impl Item {
             }), 32), match self.ty {
                 ItemType::File(b) => format!("{b:10} bytes"),
                 ItemType::Dir => format!("           <dir>"),
-                ItemType::Link(_, true) => format!("         => ... "),
-                ItemType::Link(_, false) => format!("         => .../")
+                ItemType::Link(_) => format!("         => ... "),
             },
             if self.readonly { " R" } else { "RW" },
             created.format("%d.%m.%Y %H:%M:%S"),
@@ -66,7 +62,7 @@ fn fmt_est_time_passed(date: &DateTime<Utc>) -> String {
 pub(crate) enum ItemType {
     File(u64),
     Dir,
-    Link(String, bool)
+    Link(String)
 }
 
 pub(crate) fn collect_items(dir: &str) -> Vec<Item>{
@@ -74,20 +70,20 @@ pub(crate) fn collect_items(dir: &str) -> Vec<Item>{
         .map(|entry| {
             let entry = entry.expect("insufficient permission or does not exist");
             let meta = entry.metadata().unwrap();
-            let perm = meta.permissions();
+            let (created, last_accessed, last_written, file_size, readonly) = get_meta_info(&entry.path());
             Item {
                 ty: if meta.is_file() {
-                    ItemType::File(meta.file_size())
+                    ItemType::File(file_size)
                 } else if meta.is_dir() {
                     ItemType::Dir
                 } else if meta.is_symlink() {
-                    ItemType::Link(std::fs::read_link(entry.path()).unwrap().to_str().unwrap().to_string(), entry.file_type().unwrap().is_symlink_file())
+                    ItemType::Link(std::fs::read_link(entry.path()).unwrap().to_str().unwrap().to_string())
                 } else { unreachable!() },
                 name: entry.file_name().to_str().unwrap().to_string(),
-                readonly: perm.readonly(),
-                created: meta.creation_time(),
-                last_used: meta.last_access_time(),
-                last_written: meta.last_write_time()
+                readonly,
+                created,
+                last_accessed,
+                last_written
             }
         }).collect()
 }

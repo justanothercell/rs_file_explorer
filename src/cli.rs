@@ -8,7 +8,7 @@ use std::sync::{Arc, Mutex};
 use std::{env, thread};
 use getch::Getch;
 use crate::files::{collect_items, Item, ItemType};
-use crate::os_generic::{config_dir, enable_virtual_terminal_processing, fmt_canonical_path, fmt_path_save, MetadataExt};
+use crate::os_generic::{config_dir, enable_virtual_terminal_processing, fmt_canonical_path, fmt_path_save, get_meta_info};
 
 pub(crate) fn quit() -> ! {
     File::create(&format!("{}/cc_cwd", config_dir())).unwrap().write_all(&fmt_path_save(&env::current_dir().unwrap()).as_bytes()).unwrap();
@@ -97,13 +97,13 @@ impl Cli {
                 if self.selected_item < self.dir_items.len() {
                     let item = &self.sorted_items[self.selected_item];
                     match item.ty {
-                        ItemType::File(_) | ItemType::Link(_, true) => {
+                        ItemType::File(_) => {
                             let _ = open::that(self.path.join(&item.name));
                         }
                         ItemType::Dir if item.name == "." => {
                             let _ = open::that(self.path.join(&item.name));
                         }
-                        ItemType::Dir | ItemType::Link(_, false) => {
+                        ItemType::Dir | ItemType::Link(_) => {
                             self.move_dir(&item.name.clone());
                         }
                     }
@@ -161,23 +161,23 @@ impl Cli {
                 _ => name_a.cmp(&name_b)
             }
         });
-        let self_meta = self.path.metadata().unwrap();
+        let (created, last_accessed, last_written, _, readonly) = get_meta_info(&self.path);
         sorted.insert(0, Item {
             ty: ItemType::Dir,
             name: ".".to_string(),
-            readonly: self_meta.permissions().readonly(),
-            created: self_meta.creation_time(),
-            last_used: self_meta.last_access_time(),
-            last_written: self_meta.last_write_time(),
+            readonly,
+            created,
+            last_accessed,
+            last_written,
         });
-        let parent_meta = self.path.join("..").metadata().unwrap();
+        let (created, last_accessed, last_written, _,  readonly) = get_meta_info(&self.path.join(".."));
         sorted.insert(0, Item{
             ty: ItemType::Dir,
             name: "..".to_string(),
-            readonly: parent_meta.permissions().readonly(),
-            created: parent_meta.creation_time(),
-            last_used: parent_meta.last_access_time(),
-            last_written: parent_meta.last_write_time(),
+            readonly,
+            created,
+            last_accessed,
+            last_written,
         });
         self.sorted_items = sorted;
     }
