@@ -9,6 +9,7 @@ use std::os::windows::fs::FileTypeExt;
 use std::os::unix::prelude::FileTypeExt;
 
 use std::path::PathBuf;
+use std::time::SystemTime;
 use chrono::{Local, Offset, TimeZone};
 
 #[cfg(windows)]
@@ -43,11 +44,11 @@ pub(crate) fn get_meta_info(path: &PathBuf) -> (u64, u64, u64, u64, bool) {
 #[cfg(not(windows))]
 pub(crate) fn get_meta_info(path: &PathBuf) -> (u64, u64, u64, u64, bool) {
     let meta = path.metadata().unwrap();
-    (meta.created(),
-     meta.atime(),
-     meta.mtime(),
-     meta.size(),
-     meta.mode() & 0o200)
+    (meta.created().unwrap().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs(),
+     meta.atime() as u64,
+     meta.mtime() as u64,
+     meta.size() as u64,
+     meta.mode() & 0o200 > 0)
 }
 
 #[cfg(windows)]
