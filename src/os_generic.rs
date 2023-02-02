@@ -41,7 +41,7 @@ pub(crate) fn get_meta_info(path: &PathBuf) -> (u64, u64, u64, u64, bool) {
      meta.permissions().readonly())
 }
 #[cfg(not(windows))]
-pub(crate) fn get_meta_info(path: &PathBuf) -> (u64, u64, u64, bool) {
+pub(crate) fn get_meta_info(path: &PathBuf) -> (u64, u64, u64, u64, bool) {
     let meta = path.metadata().unwrap();
     (meta.created(),
      meta.atime(),
