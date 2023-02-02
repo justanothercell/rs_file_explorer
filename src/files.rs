@@ -2,6 +2,7 @@ use std::ops::{Add};
 use chrono::{TimeZone, Utc, Duration, Local, Offset, DateTime};
 use crate::cli::truncate_str;
 use crate::os_generic::MetadataExt;
+use crate::os_generic::FileTypeExt;
 
 #[derive(Debug, Clone)]
 pub(crate) struct Item {
