@@ -3,7 +3,7 @@ Small terminal file explorer written in rust
 
 ## How to use
 - build project 
-- copy `rs_file_explorer.exe` and `cc.bat`/`cc.sh` 
+- copy `rs_file_explorer.exe` and `sd.bat`/`sd.sh` (rename sd to a command of your choice)
 (depending on your operating system) into a folder that is on `PATH`
 - run command `cc` in your terminal
 
