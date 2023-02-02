@@ -1,11 +1,9 @@
 use std::convert::Into;
-use std::ops::Add;
+use std::ops::{Add, AddAssign};
 use std::os::windows::fs::FileTypeExt;
-use chrono::{TimeZone, Utc, DateTime, Duration, LocalResult};
+use chrono::{TimeZone, Utc, DateTime, Duration, LocalResult, Local, NaiveDateTime, NaiveDate, NaiveTime, Datelike, Offset};
 use crate::cli::truncate_str;
 use crate::os_generic::MetadataExt;
-
-const TIME_ZERO: DateTime<Utc> = Utc.with_ymd_and_hms(1601, 1, 1, 0, 0, 0).unwrap();
 
 #[derive(Debug)]
 pub(crate) struct Item {
@@ -19,23 +17,24 @@ pub(crate) struct Item {
 
 impl Item {
     pub(crate) fn render(&self) -> String {
-        let m: LocalResult<DateTime<Utc>> = Utc.with_ymd_and_hms(1601, 1, 1, 0, 0, 0);
-        let c = m.unwrap();
-        m.unwrap()
-        format!("| {:20} | {:12} {} | {:12?} | {:12?} | {:12?} |",
+        let mut time_zero = Utc.with_ymd_and_hms(1601, 1, 1, 0, 0, 0).unwrap();
+        time_zero.add_assign(Duration::seconds(Local.timestamp(0, 0).offset().fix().local_minus_utc() as i64));
+        let display_format = "%d.%m.%Y %H:%M:%S";
+
+        format!("| {:32} | {:12} {} | {} | {} | {} |",
                 truncate_str(&(self.name.clone() + match self.ty {
                 ItemType::Dir => "/",
                 _  => " "
-            }), 20), match self.ty {
+            }), 32), match self.ty {
                 ItemType::File(b) => format!("{b:6} bytes"),
                 ItemType::Dir => format!("       <dir>"),
                 ItemType::Link(_, true) => format!("     => ... "),
                 ItemType::Link(_, false) => format!("     => .../")
             },
             if self.readonly { " R" } else { "RW" },
-            TIME_ZERO.add(Duration::seconds((self.created / 100000000) as i64)),
-            Utc.timestamp_opt((self.last_used / 100000000) as i64, 0).unwrap(),
-            Utc.timestamp_opt((self.last_written / 100000000) as i64, 0).unwrap()
+            time_zero.add(Duration::seconds((self.created / 10000000) as i64)).format(display_format),
+            time_zero.add(Duration::seconds((self.last_used / 10000000) as i64)).format(display_format),
+            time_zero.add(Duration::seconds((self.last_written / 10000000) as i64)).format(display_format)
         )
     }
 }
